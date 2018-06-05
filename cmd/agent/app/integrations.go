@@ -84,15 +84,15 @@ func getTufConfigPath() string {
 
 func getEmbeddedPython() (string, error) {
 	here, _ := executable.Folder()
-	pipPath := filepath.Join(here, relPyPath)
+	pyPath := filepath.Join(here, relPyPath)
 
-	if _, err := os.Stat(pipPath); err != nil {
+	if _, err := os.Stat(pyPath); err != nil {
 		if os.IsNotExist(err) {
-			return pipPath, errors.New("unable to find pip executable")
+			return pyPath, errors.New("unable to find pip executable")
 		}
 	}
 
-	return pipPath, nil
+	return pyPath, nil
 }
 
 func getConstraintsFilePath() (string, error) {
@@ -136,7 +136,7 @@ func tuf(args []string) error {
 	// cmd-flags go before the actual command
 	cmd := args[0]
 	implicitFlags := args[1:]
-	args = append([]string{"-m pip"}, cmd)
+	args = append([]string{"-mpip"}, cmd)
 
 	cmdFlags, err := tufCmd.Flags().GetStringSlice("cmd-flags")
 	if err == nil {
