@@ -362,10 +362,10 @@
              <CreateFolder/>
            </Component>
          </Directory>
-         <Directory Id="public-integrations-core" Name="public-integrations-core">
+         <Directory Id="public_integrations_core" Name="public-integrations-core">
            <Directory Id="metadata" Name="metadata">
              <Directory Id="current" Name="current">
-               <Component Id="current-metadata"
+               <Component Id="current_metadata"
                           Guid="0ce7cd2c-5ce1-44bf-ac42-965f3f74ef78"
                           Location="either">
                  <CreateFolder/>
@@ -380,7 +380,7 @@
                </Component>
              </Directory>
              <Directory Id="previous" Name="previous">
-               <Component Id="previous-metadata"
+               <Component Id="previous_metadata"
                           Guid="4d80f73b-b84c-41b2-bbc4-b374ae4d3eba"
                           Location="either">
                  <CreateFolder/>
@@ -400,8 +400,8 @@
       <ComponentRef Id="conf.d" />
       <ComponentRef Id="checks.d" />
       <ComponentRef Id="cache" />
-      <ComponentRef Id="current-metadata" />
-      <ComponentRef Id="previous-metadata" />
+      <ComponentRef Id="current_metadata" />
+      <ComponentRef Id="previous_metadata" />
       <ComponentRef Id="root.json" />
       <ComponentRef Id="ApplicationShortcut" />
       <ComponentRef Id="DATADOGAGENTSERVICE" />
