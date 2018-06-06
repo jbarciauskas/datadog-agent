@@ -2,10 +2,13 @@ package tagger
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"sync"
 
 	"github.com/DataDog/datadog-agent/pkg/util/log"
+
+	"hash/fnv"
 
 	"github.com/DataDog/datadog-agent/pkg/tagger/collectors"
 )
@@ -13,12 +16,14 @@ import (
 // entityTags holds the tag information for a given entity
 type entityTags struct {
 	sync.RWMutex
-	lowCardTags  map[string][]string
-	highCardTags map[string][]string
-	cacheValid   bool
-	cachedSource []string
-	cachedAll    []string // Low + high
-	cachedLow    []string // Sub-slice of cachedAll
+	lowCardTags   map[string][]string
+	highCardTags  map[string][]string
+	cacheValid    bool
+	cachedSource  []string
+	cachedAll     []string // Low + high
+	cachedLow     []string // Sub-slice of cachedAll
+	freshnessHash string
+	outdatedTags  bool
 }
 
 // tagStore stores entity tags in memory and handles search and collation.
@@ -69,6 +74,7 @@ func (s *tagStore) processTagInfo(info *collectors.TagInfo) error {
 	storedTags.lowCardTags[info.Source] = info.LowCardTags
 	storedTags.highCardTags[info.Source] = info.HighCardTags
 	storedTags.cacheValid = false
+	storedTags.outdatedTags = false
 	storedTags.Unlock()
 
 	if exist == false {
@@ -77,7 +83,28 @@ func (s *tagStore) processTagInfo(info *collectors.TagInfo) error {
 		s.storeMutex.Unlock()
 	}
 
+	if storedTags.freshnessHash == "" || storedTags.freshnessHash != digest(info) {
+		storedTags.Lock()
+		log.Infof("freshHash is %s", storedTags.freshnessHash) // REMOVE
+		log.Infof("highcards is %s", info.HighCardTags)        // REMOVE
+		storedTags.freshnessHash = digest(info)
+		storedTags.outdatedTags = true
+		storedTags.Unlock()
+	}
+
 	return nil
+}
+
+func digest(info *collectors.TagInfo) string {
+	log.Infof("digesting %s containing %s", info.Entity, info.LowCardTags)
+	h := fnv.New64()
+	for _, i := range info.HighCardTags {
+		h.Write([]byte(i))
+	}
+	for _, i := range info.LowCardTags {
+		h.Write([]byte(i))
+	}
+	return strconv.FormatUint(h.Sum64(), 16)
 }
 
 // prune will lock the store and delete tags for the entity previously
